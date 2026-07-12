@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a3826">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Blackjack Trainer Pro">
+<meta name="description" content="Entrenador profesional de conteo de cartas Hi-Lo. Practica como un profesional.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<link rel="icon" type="image/png" href="assets/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<title>Blackjack Trainer Pro — Entrenador de Conteo</title>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<header id="mainHeader">
+  <div class="brand">
+    <h1>♠ Blackjack Trainer Pro ♦</h1>
+    <span class="subtitle">entrenador profesional de conteo de cartas</span>
+  </div>
+  <nav class="tabs" id="mainTabs">
+    <button class="tab-btn active" data-tab="rapid">Conteo Rápido</button>
+    <button class="tab-btn" data-tab="exam">Examen</button>
+    <button class="tab-btn" data-tab="live">Mesa Casino</button>
+    <button class="tab-btn" data-tab="practice">Práctica</button>
+  </nav>
+  <div class="header-controls">
+    <select id="deckSelect" title="Número de mazos" aria-label="Número de mazos">
+      <option value="1">1 mazo</option>
+      <option value="2" selected>2 mazos</option>
+      <option value="4">4 mazos</option>
+      <option value="6">6 mazos</option>
+      <option value="8">8 mazos</option>
+    </select>
+    <select id="systemSelect" title="Sistema de conteo" aria-label="Sistema de conteo">
+      <option value="hilo" selected>Hi-Lo</option>
+      <option value="ko">KO</option>
+      <option value="omega2">Omega II</option>
+      <option value="zen">Zen Count</option>
+      <option value="halves">Wong Halves</option>
+      <option value="red7">Red Seven</option>
+    </select>
+    <button class="icon-btn" id="drawerToggle" aria-label="Abrir guía de conteo">📖 Guía</button>
+    <button class="icon-btn" id="settingsBtn" aria-label="Configuración">⚙</button>
+  </div>
+</header>
+
+<!-- ========== MAIN APP ========== -->
+<div class="app" id="app">
+
+  <!-- ====== TAB: CONTEO RÁPIDO ====== -->
+  <div class="tab-panel active" id="panel-rapid">
+    <div class="stage">
+      <div class="felt-wrap rapid-felt">
+        <div class="rapid-stage">
+          <div class="shoe-3d" id="shoeRapid" title="Zapato de reparto">
+            <div class="shoe-body"></div>
+            <div class="shoe-cards-stack" id="shoeStackRapid"></div>
+          </div>
+
+          <div class="flash-zone">
+            <div class="card" id="flashCard">
+              <div class="card-face card-back">
+                <div class="card-back-pattern"></div>
+                <div class="card-back-center">
+                  <div class="card-back-diamond"></div>
+                </div>
+              </div>
+              <div class="card-face card-front" id="flashFront"></div>
+            </div>
+            <div class="hint-bubble" id="hintBubble"></div>
+          </div>
+
+          <div class="quiz-overlay" id="quizOverlay">
+            <div class="quiz-box">
+              <h3 id="quizTitle">¿Cuál es el conteo corriente?</h3>
+              <p class="quiz-instruction" id="quizInstruction"></p>
+              <input type="number" id="quizInput" autocomplete="off" inputmode="numeric" placeholder="0">
+              <div class="quiz-buttons">
+                <button class="btn btn-gold" id="quizSubmit">Responder</button>
+              </div>
+              <div class="feedback-msg" id="quizFeedback"></div>
+              <div class="feedback-explanation" id="quizExplanation"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <button class="btn btn-gold btn-lg" id="startBtn">▶ Iniciar</button>
+        <button class="btn" id="pauseBtn" disabled>⏸ Pausar</button>
+        <button class="btn" id="resetBtn">↺ Reiniciar</button>
+        <select id="speedSelect" aria-label="Velocidad de reparto">
+          <option value="3000">Lenta</option>
+          <option value="1800" selected>Media</option>
+          <option value="900">Rápida</option>
+          <option value="500">Experta</option>
+          <option value="250">Extrema</option>
+        </select>
+        <label class="toggle-label"><input type="checkbox" id="hintToggle" checked> Mostrar valor</label>
+        <label class="toggle-label"><input type="checkbox" id="trueToggle"> Preguntar conteo verdadero</label>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-card"><div class="stat-label">Precisión</div><div class="stat-value" id="statAcc">—</div></div>
+        <div class="stat-card"><div class="stat-label">Racha actual</div><div class="stat-value" id="statStreak">0</div></div>
+        <div class="stat-card"><div class="stat-label">Mejor racha</div><div class="stat-value" id="statBest">0</div></div>
+        <div class="stat-card"><div class="stat-label">Cartas vistas</div><div class="stat-value" id="statCards">0</div></div>
+        <div class="stat-card"><div class="stat-label">Cartas/min</div><div class="stat-value" id="statCpm">—</div></div>
+        <div class="stat-card"><div class="stat-label">Tiempo</div><div class="stat-value" id="statTime">0:00</div></div>
+      </div>
+
+      <div class="stat-card full-width">
+        <div class="stat-label">Penetración del zapato</div>
+        <div class="pen-bar-wrap"><div class="pen-bar" id="penBarRapid" style="width:0%"></div></div>
+        <div class="pen-labels"><span>0%</span><span id="penPercentRapid">0%</span><span>100%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TAB: EXAMEN ====== -->
+  <div class="tab-panel" id="panel-exam">
+    <div class="stage">
+      <div class="felt-wrap exam-felt">
+        <div class="exam-stage">
+          <div class="exam-header">
+            <div class="exam-timer" id="examTimer">15:00</div>
+            <div class="exam-progress" id="examProgress">Carta 0 / 100</div>
+          </div>
+
+          <div class="flash-zone">
+            <div class="card" id="examCard">
+              <div class="card-face card-back">
+                <div class="card-back-pattern"></div>
+                <div class="card-back-center">
+                  <div class="card-back-diamond"></div>
+                </div>
+              </div>
+              <div class="card-face card-front" id="examFront"></div>
+            </div>
+          </div>
+
+          <div class="exam-input-zone" id="examInputZone">
+            <input type="number" id="examInput" autocomplete="off" inputmode="numeric" placeholder="Tu respuesta">
+            <button class="btn btn-gold" id="examSubmit">Enviar</button>
+          </div>
+
+          <div class="exam-results" id="examResults">
+            <h2>Reporte de Examen</h2>
+            <div class="exam-summary" id="examSummary"></div>
+            <div class="exam-details" id="examDetails"></div>
+            <button class="btn btn-gold" id="examRetry">Nuevo examen</button>
+          </div>
+
+          <div class="exam-start-overlay" id="examStartOverlay">
+            <h2>Modo Examen</h2>
+            <p>100 cartas · Sin ayudas · Sin colores · Cronómetro</p>
+            <div class="exam-options">
+              <label><input type="checkbox" id="examTrueCount" checked> Incluir conteo verdadero</label>
+              <label><input type="checkbox" id="examDecksRemaining"> Preguntar mazos restantes</label>
+            </div>
+            <button class="btn btn-gold btn-lg" id="examStartBtn">Comenzar examen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TAB: MESA CASINO ====== -->
+  <div class="tab-panel" id="panel-live">
+    <div class="stage live-stage">
+      <div class="live-hud">
+        <div class="hud-group">
+          <div class="hud-item"><div class="hud-label">Conteo corriente</div><div class="hud-value" id="liveRunning">0</div></div>
+          <div class="hud-item"><div class="hud-label">Conteo verdadero</div><div class="hud-value" id="liveTrue">0.0</div></div>
+          <div class="hud-item"><div class="hud-label">Mazos restantes</div><div class="hud-value" id="liveDecksLeft">2.0</div></div>
+        </div>
+        <div class="hud-group">
+          <div class="hud-item"><div class="hud-label">Cartas vistas</div><div class="hud-value" id="liveCardsSeen">0</div></div>
+          <div class="hud-item"><div class="hud-label">Penetración</div><div class="hud-value" id="livePenetration">0%</div></div>
+          <div class="hud-item"><div class="hud-label">Ventaja jugador</div><div class="hud-value" id="liveEdge">0.0%</div></div>
+        </div>
+        <div class="bet-suggestion" id="betSuggestion">
+          <span class="bet-label">Apuesta sugerida</span>
+          <span class="bet-value">1 unidad</span>
+        </div>
+      </div>
+
+      <div class="felt-wrap live-felt">
+        <div class="table-top">
+          <div class="dealer-area" id="dealerArea">
+            <div class="seat-label">Casa (Dealer)</div>
+            <div class="dealer-state" id="dealerState">Esperando</div>
+            <div class="dealer-cards" id="dealerCards"></div>
+            <div class="dealer-total" id="dealerTotal">—</div>
+          </div>
+        </div>
+
+        <div class="betting-circle" id="bettingCircle">
+          <div class="circle-inner"></div>
+          <span class="circle-text">BLACKJACK PAYS 3 TO 2</span>
+        </div>
+
+        <div class="seats-row" id="seatsRow">
+          <!-- Seats rendered by JS -->
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <button class="btn btn-gold" id="dealBtn">🂠 Repartir mano</button>
+        <button class="btn" id="newShoeBtn">🔄 Nuevo zapato</button>
+        <select id="seatsCount" aria-label="Número de jugadores">
+          <option value="3">3 jugadores</option>
+          <option value="4" selected>4 jugadores</option>
+          <option value="5">5 jugadores</option>
+          <option value="6">6 jugadores</option>
+        </select>
+        <select id="dealerSoft17" aria-label="Dealer plantarse en 17 suave">
+          <option value="s17" selected>Dealer S17</option>
+          <option value="h17">Dealer H17</option>
+        </select>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-card"><div class="stat-label">Manos jugadas</div><div class="stat-value" id="handsPlayed">0</div></div>
+        <div class="stat-card"><div class="stat-label">Ganadas</div><div class="stat-value" id="handsWon">0</div></div>
+        <div class="stat-card"><div class="stat-label">Pérdidas</div><div class="stat-value" id="handsLost">0</div></div>
+        <div class="stat-card"><div class="stat-label">Blackjacks</div><div class="stat-value" id="handsBj">0</div></div>
+        <div class="stat-card"><div class="stat-label">Unidades</div><div class="stat-value" id="unitsProfit">0</div></div>
+      </div>
+
+      <div class="stat-card full-width">
+        <div class="stat-label">Penetración del zapato</div>
+        <div class="pen-bar-wrap"><div class="pen-bar" id="penBarLive" style="width:0%"></div></div>
+        <div class="pen-labels"><span>0%</span><span id="penPercentLive">0%</span><span>100%</span></div>
+      </div>
+
+      <div class="round-log" id="roundLog"></div>
+    </div>
+  </div>
+
+  <!-- ====== TAB: PRÁCTICA ====== -->
+  <div class="tab-panel" id="panel-practice">
+    <div class="stage">
+      <div class="felt-wrap practice-felt">
+        <div class="practice-stage">
+          <div class="practice-header">
+            <h2>Entrenamiento Adaptativo</h2>
+            <p id="practiceSubtitle">El sistema detecta tus errores y adapta los ejercicios</p>
+          </div>
+
+          <div class="practice-categories" id="practiceCategories">
+            <div class="cat-card" data-cat="low">
+              <div class="cat-icon">🟢</div>
+              <div class="cat-name">Cartas bajas (2-6)</div>
+              <div class="cat-value">+1</div>
+              <div class="cat-accuracy" id="accLow">—</div>
+            </div>
+            <div class="cat-card" data-cat="mid">
+              <div class="cat-icon">⚪</div>
+              <div class="cat-name">Cartas medias (7-9)</div>
+              <div class="cat-value">0</div>
+              <div class="cat-accuracy" id="accMid">—</div>
+            </div>
+            <div class="cat-card" data-cat="high">
+              <div class="cat-icon">🔴</div>
+              <div class="cat-name">Cartas altas (10-A)</div>
+              <div class="cat-value">−1</div>
+              <div class="cat-accuracy" id="accHigh">—</div>
+            </div>
+          </div>
+
+          <div class="practice-zone">
+            <div class="flash-zone">
+              <div class="card" id="practiceCard">
+                <div class="card-face card-back">
+                  <div class="card-back-pattern"></div>
+                  <div class="card-back-center">
+                    <div class="card-back-diamond"></div>
+                  </div>
+                </div>
+                <div class="card-face card-front" id="practiceFront"></div>
+              </div>
+            </div>
+
+            <div class="practice-input">
+              <div class="practice-btns" id="practiceBtns">
+                <button class="btn-practice" data-val="-2">−2</button>
+                <button class="btn-practice" data-val="-1">−1</button>
+                <button class="btn-practice" data-val="0">0</button>
+                <button class="btn-practice" data-val="1">+1</button>
+                <button class="btn-practice" data-val="2">+2</button>
+              </div>
+              <div class="practice-feedback" id="practiceFeedback"></div>
+            </div>
+          </div>
+
+          <div class="controls-bar">
+            <button class="btn btn-gold" id="practiceStartBtn">▶ Iniciar práctica</button>
+            <button class="btn" id="practiceStopBtn" disabled>⏹ Detener</button>
+            <select id="practiceMode" aria-label="Modo de práctica">
+              <option value="adaptive" selected>Adaptativo (IA)</option>
+              <option value="focused">Enfoque en errores</option>
+              <option value="random">Aleatorio</option>
+              <option value="truecount">Solo conteo verdadero</option>
+            </select>
+          </div>
+
+          <div class="stats-bar">
+            <div class="stat-card"><div class="stat-label">Precisión</div><div class="stat-value" id="practiceAcc">—</div></div>
+            <div class="stat-card"><div class="stat-label">Racha</div><div class="stat-value" id="practiceStreak">0</div></div>
+            <div class="stat-card"><div class="stat-label">Cartas</div><div class="stat-value" id="practiceCount">0</div></div>
+            <div class="stat-card"><div class="stat-label">Tiempo total</div><div class="stat-value" id="practiceTime">0h 0m</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== CHEAT SHEET DRAWER ========== -->
+<aside class="drawer" id="drawer">
+  <div class="drawer-inner">
+    <button class="drawer-close" id="drawerClose">×</button>
+    <h2 id="drawerTitle">Valores Hi-Lo</h2>
+
+    <div id="drawerSystemInfo">
+      <p class="system-desc" id="systemDesc"></p>
+      <table class="hilo-table" id="hiloTable"></table>
+    </div>
+
+    <h3>Conteo verdadero</h3>
+    <p class="drawer-note">El <b>conteo corriente</b> se divide entre los <b>mazos restantes</b>:</p>
+    <p class="drawer-formula"><code>Conteo verdadero = RC ÷ Mazos restantes</code></p>
+
+    <h3>Guía de apuestas (Hi-Lo)</h3>
+    <table class="spread-table">
+      <tr><td>TC ≤ 1</td><td>1 unidad</td></tr>
+      <tr><td>TC = 2</td><td>2 unidades</td></tr>
+      <tr><td>TC = 3</td><td>4 unidades</td></tr>
+      <tr><td>TC = 4</td><td>6 unidades</td></tr>
+      <tr><td>TC ≥ 5</td><td>8+ unidades</td></tr>
+    </table>
+
+    <h3>Consejos profesionales</h3>
+    <ul class="drawer-tips">
+      <li>Practica hasta que el conteo sea automático, sin pensar.</li>
+      <li>Sube la velocidad solo cuando tu precisión supere el 95%.</li>
+      <li>En una mesa real, cuenta TODAS las cartas visibles.</li>
+      <li>El "conteo de pares" ayuda: suma valores de pares de cartas.</li>
+      <li>Practica con distracciones para simular un casino real.</li>
+    </ul>
+  </div>
+</aside>
+
+<!-- ========== SETTINGS MODAL ========== -->
+<div class="modal" id="settingsModal">
+  <div class="modal-overlay" id="settingsOverlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Configuración</h2>
+      <button class="modal-close" id="settingsClose">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-group">
+        <h3>Apariencia</h3>
+        <label class="setting-item">
+          <span>Modo oscuro</span>
+          <input type="checkbox" id="darkModeToggle" checked>
+        </label>
+        <label class="setting-item">
+          <span>Animaciones</span>
+          <input type="checkbox" id="animationsToggle" checked>
+        </label>
+        <label class="setting-item">
+          <span>Sonidos</span>
+          <input type="checkbox" id="soundToggle" checked>
+        </label>
+      </div>
+      <div class="setting-group">
+        <h3>Entrenamiento</h3>
+        <label class="setting-item">
+          <span>Mostrar valor Hi-Lo en cartas</span>
+          <input type="checkbox" id="showValuesToggle" checked>
+        </label>
+        <label class="setting-item">
+          <span>Explicaciones después de errores</span>
+          <input type="checkbox" id="explainToggle" checked>
+        </label>
+        <label class="setting-item">
+          <span>Preguntar conteo verdadero automáticamente</span>
+          <input type="checkbox" id="autoTrueToggle">
+        </label>
+      </div>
+      <div class="setting-group">
+        <h3>Datos</h3>
+        <button class="btn btn-danger" id="exportStatsBtn">📥 Exportar estadísticas (JSON)</button>
+        <button class="btn btn-danger" id="importStatsBtn">📤 Importar estadísticas (JSON)</button>
+        <button class="btn btn-danger" id="resetStatsBtn">🗑 Borrar todas las estadísticas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TOAST NOTIFICATIONS ========== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ========== SCRIPTS (ES Modules) ========== -->
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
